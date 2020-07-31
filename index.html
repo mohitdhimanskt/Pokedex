@@ -7,23 +7,26 @@
         Pokedex
     </title>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
 <body>
     <h1>Pokedex</h1>
     <div id="container" class="poke-container">
-    <!-- <div class="img-container">
-        <img src="https://pokeres.bastionbot.org/images/pokemon/${
-                        pokemon.id
-                    }.png" alt="${name}" />
-    </div>
-    <div class="info">
-        <span class="number">#${pokemon.id
-                        .toString()
-                        .padStart(3, '0')}</span>
-        <h3 class="name">${name}</h3>
-        <small class="type">Type: <span>${type}</span></small>
-    </div> -->
+        <!-- {{pokemons}} -->
+        <div v-for="item in pokemons" class="pokemon" :key="item.id" :style="getColor(item)">
+            <div class="img-container">
+                <img :src="'https://pokeres.bastionbot.org/images/pokemon/' + item.id + '.png'" :alt="item.name" />
+            </div>
+            <div class="info">
+                <span class="number">#{{item.id
+                    .toString()
+                    .padStart(3, '0')}}</span>
+                <h3 class="name">{{item.name[0].toUpperCase() + item.name.slice(1)}}</h3>
+                <small class="type">Type: <span>{{getType(item)}}</span></small>
+            </div>
+        </div>
+
 
     </div>
     <script>
@@ -46,16 +49,51 @@
                     flying: '#F5F5F5',
                     fighting: '#E6E0D4',
                     normal: '#F5F5F5'
+                },
+                pokemons: [],
+                pokemonNumbers : 150
+
+            },
+            computed: {
+                main_types() {
+                    return Object.keys(this.colors)
                 }
             },
+            mounted: function () {
+                this.getAllPokemon()
+            },
             methods: {
-                get(){
-                fetch('https://pokeapi.co/api/v2/pokemon')
-  .then(res => res.json())
-                    .then(data => console.log(data));
+                async getAllPokemon() {
+                    for (let i = 1; i <= this.pokemonNumbers; i++) {
+                        await this.getPokemons(i);
+                    }
+                },
+                async getPokemons(id) {
+
+                    const url = `https://pokeapi.co/api/v2/pokemon/${id}`;
+                    const res = await fetch(url);
+                    const pokemon = await res.json();
+                    this.pokemons.push(pokemon)
+
+                },
+                getType(pokemon) {
+                    const poke_types = pokemon.types.map(type => type.type.name);
+                    const type = this.main_types.find(type => poke_types.indexOf(type) > -1);
+                    return type;
+                },
+                getColor(pokemon) {
+                    const poke_types = pokemon.types.map(type => type.type.name);
+                    const type = this.main_types.find(type => poke_types.indexOf(type) > -1);
+                    const color = this.colors[type];
+                    return {
+                        backgroundColor: color
+                    }
+
                 }
-            }
+            },
+
         })
+
     </script>
 </body>
 
